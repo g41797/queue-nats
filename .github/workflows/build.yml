@@ -29,15 +29,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Build
-        working-directory: ./tests
+        working-directory: ./testsnats
         run: docker compose build
       - name: PHP Unit tests coverage
-        working-directory: ./tests
-        run: docker compose run --rm php-cli vendor/bin/phpunit --coverage-clover ./tests/runtime/coverage.xml
+        working-directory: ./testsnats
+        run: docker compose run --rm php-cli vendor/bin/phpunit --coverage-clover ./testsnats/runtime/coverage.xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           verbose: true
-          files: ./tests/runtime/coverage.xml
+          files: ./testsnats/runtime/coverage.xml
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

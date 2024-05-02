@@ -9,7 +9,7 @@
     cacheDirectory="vendor/.psalm-cache"
 >
     <projectFiles>
-        <directory name="src" />
+        <directory name="srcnats" />
         <ignoreFiles>
             <directory name="vendor"/>
         </ignoreFiles>

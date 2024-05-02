@@ -18,16 +18,16 @@
 
     <testsuites>
         <testsuite name="Integration">
-            <directory>./tests/Integration</directory>
+            <directory>./testsnats/Integration</directory>
         </testsuite>
         <testsuite name="Unit">
-            <directory>./tests/Unit</directory>
+            <directory>./testsnats/Unit</directory>
         </testsuite>
     </testsuites>
 
     <source>
         <include>
-            <directory suffix=".php">./src</directory>
+            <directory suffix=".php">./srcnats</directory>
         </include>
     </source>
 </phpunit>
