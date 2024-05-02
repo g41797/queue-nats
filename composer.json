@@ -52,7 +52,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Yiisoft\\Queue\\Redis\\Nats\\": "testsnats"
+            "Yiisoft\\Queue\\Nats\\": "testsnats"
         }
     },
     "extra": {
