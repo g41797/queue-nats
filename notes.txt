@@ -34,9 +34,6 @@ Ephemeral Consumer life cycle
     https://natsio.slack.com/archives/CM3T6T7JQ/p1711275996676309
         https://natsio.slack.com/archives/CM3T6T7JQ/p1711278584957209?thread_ts=1711275996.676309&cid=CM3T6T7JQ
 
-Nats streaming as task queue
-    https://github.com/nats-io/stan.js/issues/49
-
 Nats articles
     https://www.byronruth.com/tag/series/
 
@@ -55,6 +52,18 @@ RoadRunner Jobs
 
 Allowed number of consumers for JS as Queue (WorkQueuePolicy)
     https://natsio.slack.com/archives/CM3T6T7JQ/p1712153925255479
+
+Multiple clients/workers as one consumer
+    https://natsio.slack.com/archives/CM3T6T7JQ/p1714853594923729?thread_ts=1714853415.006099&cid=CM3T6T7JQ
+
+Synadia examples
+    https://github.com/synadia-io/rethink_connectivity
+
+Implementing NATS JetStream as Queues
+    https://dzone.com/articles/implementing-nats-jetstream-as-queues-in-golang-a
+
+Choria Asynchronous Job Processor
+    https://github.com/choria-io/asyncjobs
 
 JetStream Java tutorial
     https://nats.io/blog/hello-world-java-client/
