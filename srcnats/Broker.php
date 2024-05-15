@@ -21,17 +21,18 @@ class Broker implements BrokerInterface
     private string $streamName;
     private string $subject;
     private string $bucket;
+    private bool $returnDisconnected = false;
 
     public function __construct(
         private string $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
         private ?Configuration $configuration = null,
         private ?LoggerInterface $logger = null
     ) {
-        if (null === $configuration ) {
-            $configuration = Configuration::default();
+        if (null == $configuration ) {
+            $this->configuration = Configuration::default();
         }
-        if (null === $logger ) {
-            $logger = new NullLogger();
+        if (null == $logger ) {
+            $this->logger = new NullLogger();
         }
 
         if (empty($this->channelName))
@@ -89,7 +90,6 @@ class Broker implements BrokerInterface
     private function natsConfiguration(): NatsConfiguration
     {
         return new NatsConfiguration([
-            'scheme' => 'nats',
             'host' => $this->configuration->host,
             'port' => $this->configuration->port,
             'user' => null,
@@ -101,6 +101,10 @@ class Broker implements BrokerInterface
 
     public function isConnected(): bool
     {
+        if ($this->returnDisconnected) {
+            return false;
+        }
+
         if ($this->getClient()->ping()) {
             return true;
         }
@@ -111,6 +115,7 @@ class Broker implements BrokerInterface
 
     public function disconnect(): void
     {
+        $this->returnDisconnected = true;
 
         if (null == $this->client){
             return;
