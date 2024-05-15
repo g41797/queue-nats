@@ -1,5 +1,7 @@
 Copyright © 2024 by g41797 (https://github.com/g41797)
+
 Copyright © 2008 by Yii Software (https://www.yiiframework.com/)
+
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
