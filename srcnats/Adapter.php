@@ -15,14 +15,14 @@ class Adapter implements AdapterInterface
     public function __construct(
         private string $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
         private ?LoopInterface $loop = null,
-        private ?Configuration $condifuration = null,
+        private ?Configuration $configuration = null,
         private int $timeout = 3
     ) {
         if (null === $loop ) {
             $loop = new NullLoop();
         }
 
-        if (null === $condifuration ) {
+        if (null === $configuration ) {
             $configuration = Configuration::default();
         }
     }
@@ -64,6 +64,6 @@ class Adapter implements AdapterInterface
             return $this;
         }
 
-        return new self($channel, $this->loop, $this->condifuration, $this->timeout);
+        return new self($channel, $this->loop, $this->configuration, $this->timeout);
     }
 }

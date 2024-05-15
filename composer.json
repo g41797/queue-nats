@@ -47,12 +47,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Yiisoft\\Queue\\Nats\\": "srcnats"
+            "Yiisoft\\Queue\\Nats\\": "srcnats/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Yiisoft\\Queue\\Nats\\": "testsnats"
+            "Yiisoft\\Queue\\Nats\\": "testsnats/"
         }
     },
     "extra": {
