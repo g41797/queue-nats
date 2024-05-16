@@ -4,45 +4,58 @@ declare(strict_types=1);
 
 namespace Yiisoft\Queue\Nats;
 
-use Basis\Nats\Connection;
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
-
 use Basis\Nats\Client;
 use Basis\Nats\Configuration as NatsConfiguration;
+use Basis\Nats\Connection;
+use Basis\Nats\Consumer\AckPolicy;
+use Basis\Nats\Consumer\Configuration;
+use Basis\Nats\Consumer\Consumer;
+use Basis\Nats\Consumer\ReplayPolicy;
+use Basis\Nats\Message\Payload;
+use Basis\Nats\Stream\DiscardPolicy;
+use Basis\Nats\Stream\RetentionPolicy;
+use Basis\Nats\Stream\StorageBackend;
+use Basis\Nats\Stream\Stream;
+use Basis\Nats\KeyValue\Bucket;
+
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 use Yiisoft\Queue\Enum\JobStatus;
 use Yiisoft\Queue\Message\IdEnvelope;
 use Yiisoft\Queue\Message\MessageInterface;
 use Yiisoft\Queue\QueueFactoryInterface;
+use Yiisoft\Queue\Nats\Configuration as BrokerConfiguration;
+
 
 class Broker implements BrokerInterface
 {
-    private string $streamName;
+    public string $streamName;
     private string $subject;
-    private string $bucket;
+    public string $bucketName;
     private bool $returnDisconnected = false;
+    private ?Bucket $statuses = null;
+
 
     public function __construct(
         private string $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
-        private ?Configuration $configuration = null,
+        private ?BrokerConfiguration $configuration = null,
         private ?LoggerInterface $logger = null
     ) {
-        if (null == $configuration ) {
-            $this->configuration = Configuration::default();
+        if (null == $configuration) {
+            $this->configuration = BrokerConfiguration::default();
         }
-        if (null == $logger ) {
+        if (null == $logger) {
             $this->logger = new NullLogger();
         }
 
-        if (empty($this->channelName))
-        {
+        if (empty($this->channelName)) {
             $this->channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME;
         }
 
         $this->streamName   = strtoupper($this->channelName) . "JOBS";
         $this->subject      = $this->streamName . ".*";
-        $this->bucket       = $this->streamName . "-jobstates";
+        $this->bucketName   = $this->streamName . "-jobstates";
     }
 
 
@@ -57,8 +70,7 @@ class Broker implements BrokerInterface
 
     public function push(MessageInterface $job): ?IdEnvelope
     {
-        if (!$this->isConnected())
-        {
+        if (!$this->isConnected()) {
             return null;
         }
 
@@ -87,6 +99,48 @@ class Broker implements BrokerInterface
         return $this->client ?: $this->client = new Client($this->natsConfiguration());
     }
 
+    private ?Stream $submitted = null;
+
+    public function getSubmitted(): ?Stream
+    {
+        if ($this->submitted !== null) {
+            return $this->submitted;
+        }
+
+        $stream = $this->getClient()->getApi()->getStream($this->streamName);
+        $stream->getConfiguration()->
+            setSubjects([$this->subject])->
+            setRetentionPolicy(RetentionPolicy::WORK_QUEUE)->
+            setStorageBackend(StorageBackend::FILE)->
+            setDiscardPolicy(DiscardPolicy::OLD);
+
+        $stream->create();
+
+        if (!$stream->exists()) {
+            $this->logger->error("can not create jetstream ".$this->streamName." for submitting jobs");
+            return null;
+        }
+
+        $this->submitted = $stream;
+        return $this->submitted;
+    }
+
+    public function deleteSubmitted(): void
+    {
+        if ($this->submitted == null) {
+            return;
+        }
+
+        if (!$this->submitted->exists()) {
+            $this->submitted = null;
+            return;
+        }
+
+        $this->submitted->delete();
+        $this->submitted = null;
+        return;
+    }
+
     private function natsConfiguration(): NatsConfiguration
     {
         return new NatsConfiguration([
@@ -109,7 +163,7 @@ class Broker implements BrokerInterface
             return true;
         }
 
-        $this->logger->error("nats broker is not connected");
+        $this->logger->error('nats broker is not connected');
         return false;
     }
 
@@ -117,7 +171,7 @@ class Broker implements BrokerInterface
     {
         $this->returnDisconnected = true;
 
-        if (null == $this->client){
+        if (null == $this->client) {
             return;
         }
 

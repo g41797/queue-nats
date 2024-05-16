@@ -32,4 +32,14 @@ abstract class FunctionalTestCase extends TestCase
             $api->getStream($name)->delete();
         }
     }
+
+    public function getStreamNames(): array
+    {
+        $api = $this->createClient()->getApi();
+
+        $api->client->logger = null;
+
+        return $api->getStreamNames();
+    }
+
 }

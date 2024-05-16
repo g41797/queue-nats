@@ -9,13 +9,14 @@ use Yiisoft\Queue\Cli\LoopInterface;
 use Yiisoft\Queue\Enum\JobStatus;
 use Yiisoft\Queue\Message\MessageInterface;
 use Yiisoft\Queue\QueueFactoryInterface;
+use Yiisoft\Queue\Nats\Configuration as BrokerConfiguration;
 
 class Adapter implements AdapterInterface
 {
     public function __construct(
         private string $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
         private ?LoopInterface $loop = null,
-        private ?Configuration $configuration = null,
+        private ?BrokerConfiguration $configuration = null,
         private int $timeout = 3
     ) {
         if (null === $loop ) {
@@ -23,7 +24,7 @@ class Adapter implements AdapterInterface
         }
 
         if (null === $configuration ) {
-            $configuration = Configuration::default();
+            $configuration = BrokerConfiguration::default();
         }
     }
     /**

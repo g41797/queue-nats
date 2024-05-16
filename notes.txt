@@ -29,7 +29,7 @@ Nats JS client for php
 
 Ephemeral Consumer life cycle
     https://natsio.slack.com/archives/CM3T6T7JQ/p1711275996676309
-        https://natsio.slack.com/archives/CM3T6T7JQ/p1711278584957209?thread_ts=1711275996.676309&cid=CM3T6T7JQ
+    https://natsio.slack.com/archives/CM3T6T7JQ/p1711278584957209?thread_ts=1711275996.676309&cid=CM3T6T7JQ
 
 Nats articles
     https://www.byronruth.com/tag/series/
@@ -91,4 +91,60 @@ PHP UUID generator (for usage as MESSAGE_ID_KEY)
 
 Tracking of job state in Work-queue stream
     https://natsio.slack.com/archives/CM3T6T7JQ/p1715060131243269
+
+    Question:
+        Tracking of job state in Work-queue stream
+        ----------------------------------------------------
+        Proposed flow:
+            Jobs are submitted to JS work-queue stream
+            Received sequence number is used further as unique JOB ID
+
+        Job has following states:
+            Submitted
+            In-process
+            Finished
+            Failed
+
+        Submitter calls GetJobState(JOB ID) in order to get job state
+
+        Worker calls SetJobState(JOB ID, job state) in order to update job state
+        This is typical flow in background job processing.
+
+        What is the NATS way/pattern to implement it?
+
+    Answer:
+        I’m using a JetStream configured as a workflow for sending job updates
+        and a K/V store for saving the state of the jobs in JSON format.
+        I Ack() the job after updating the K/V. That is hopefully good enough.
+
+
+Nats lock
+    https://pkg.go.dev/github.com/metal-toolbox/addonx/natslock
+
+JetStream Global Lock
+    https://natsio.slack.com/archives/CM3T6T7JQ/p1715835870966629
+
+    Question:
+        For background processing we use:
+        Stream with WorkQueuePolicy - queue for workers
+        KV bucket for saving of job states (submitted/inprocess/finished/failed)
+
+        Is there possibility to lock JetStream in order to achieve atomic working with 2 storages?
+
+        Another example when atomic is required - initiation of streams/buckets.
+        We can not do it via cli, so first process (submitter or worker) should create/purge/etc
+        by itself
+
+    Answers:
+        ... the solution is simple, optimistic locking with deduplication:
+        Read from stream (but no ack)
+        CAS (compare and swap) Store to KV (only update if a unique transaction key is not already set)
+        If update successful - ack in stream
+        If update failed (the transaction key is already in KV) its a duplicate. You log a warning and ack the message anyway
+
+        ...You dont generally need a global lock for this kind of thing since jetstream
+        ensures only 1 client gets a message within the ack waiting time.
+        So optimistic concurrency control is often enough when you consider that
+        if you use acks correctly and request more time to process a message if you are
+        not done with it in time you can even handle long running jobs this way
 

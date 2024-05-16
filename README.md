@@ -63,5 +63,5 @@ Use [ComposerRequireChecker](https://github.com/maglnet/ComposerRequireChecker) 
 
 ## License
 
-The Yii Queue Nats is free software. It is released under the terms of the BSD License.
+The Yii3 Queue Nats Adapter is free software. It is released under the terms of the BSD License.
 Please see [`LICENSE`](./LICENSE.md) for more information.
