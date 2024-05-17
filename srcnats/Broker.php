@@ -34,8 +34,6 @@ class Broker implements BrokerInterface
     private string $subject;
     public string $bucketName;
     private bool $returnDisconnected = false;
-    private ?Bucket $statuses = null;
-
 
     public function __construct(
         private string $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
@@ -55,7 +53,7 @@ class Broker implements BrokerInterface
 
         $this->streamName   = strtoupper($this->channelName) . "JOBS";
         $this->subject      = $this->streamName . ".*";
-        $this->bucketName   = $this->streamName . "-jobstates";
+        $this->bucketName   = $this->streamName;
     }
 
 
@@ -70,7 +68,7 @@ class Broker implements BrokerInterface
 
     public function push(MessageInterface $job): ?IdEnvelope
     {
-        if (!$this->isConnected()) {
+        if (!$this->isReady()) {
             return null;
         }
 
@@ -79,24 +77,29 @@ class Broker implements BrokerInterface
 
     public function jobStatus(IdEnvelope $job): ?JobStatus
     {
+        if (!$this->isReady()) {
+            return null;
+        }
+
         return null;
     }
 
     public function pull(float $timeout): ?IdEnvelope
     {
+        if (!$this->isReady()) {
+            return null;
+        }
+
         return null;
     }
 
     public function notify(IdEnvelope $job, JobStatus $jobStatus): bool
     {
+        if (!$this->isReady()) {
+            return false;
+        }
+
         return false;
-    }
-
-    protected ?Client $client = null;
-
-    private function getClient(): Client
-    {
-        return $this->client ?: $this->client = new Client($this->natsConfiguration());
     }
 
     private ?Stream $submitted = null;
@@ -107,7 +110,11 @@ class Broker implements BrokerInterface
             return $this->submitted;
         }
 
-        $stream = $this->getClient()->getApi()->getStream($this->streamName);
+        $stream = $this->
+            getClient()->
+            getApi()->
+            getStream($this->streamName);
+
         $stream->getConfiguration()->
             setSubjects([$this->subject])->
             setRetentionPolicy(RetentionPolicy::WORK_QUEUE)->
@@ -139,6 +146,53 @@ class Broker implements BrokerInterface
         $this->submitted->delete();
         $this->submitted = null;
         return;
+    }
+
+    private ?Bucket $statuses = null;
+
+    public function getStatuses(): ?Bucket
+    {
+        if ($this->statuses !== null) {
+            return $this->statuses;
+        }
+
+        $bucket = $this->
+            getClient()
+            ->getApi()
+            ->getBucket($this->bucketName);
+
+        if (!$bucket->getStream()->exists()) {
+            $this->logger->error("can not create kv storage ".$this->bucketName." for statuses");
+            return null;
+        }
+
+        $this->statuses = $bucket;
+
+        return $this->statuses;
+    }
+
+    public function deleteStatuses(): void
+    {
+        if ($this->statuses == null) {
+            return;
+        }
+
+        if (!$this->statuses->getStream()->exists()) {
+            $this->statuses = null;
+            return;
+        }
+
+        $this->statuses->getStream()->delete();
+        $this->statuses = null;
+        return;
+    }
+
+
+    protected ?Client $client = null;
+
+    private function getClient(): Client
+    {
+        return $this->client ?: $this->client = new Client($this->natsConfiguration());
     }
 
     private function natsConfiguration(): NatsConfiguration
@@ -183,5 +237,25 @@ class Broker implements BrokerInterface
         return;
     }
 
+    public function isReady(): bool
+    {
+        if (!$this->isConnected()) {
+            return false;
+        }
+
+        if (null == $this->getSubmitted()) {
+            return false;
+        }
+
+        if (null == $this->getStatuses()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    static public function bucketStreamName(string $name): string {
+        return strtoupper("kv_$name");
+    }
 
 }
