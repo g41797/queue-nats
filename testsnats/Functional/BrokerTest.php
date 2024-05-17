@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Queue\Nats\Functional;
 
+use Yiisoft\Queue\Message\Message;
 use Yiisoft\Queue\Nats\Broker;
 
 class BrokerTest extends FunctionalTestCase
@@ -95,4 +96,23 @@ class BrokerTest extends FunctionalTestCase
 
         return;
     }
+
+    public function testSubmitGetStatus()
+    {
+        $submitter = new Broker();
+        $this->assertTrue($submitter->isReady());
+
+        $job = new Message('jobhandler', 'jobdata');
+
+        $extjob = $submitter->push($job);
+        $this->assertNotNull($extjob);
+
+        $jobStatus = $submitter->jobStatus($extjob);
+        $this->assertNotNull($jobStatus);
+        $this->assertTrue($jobStatus->isWaiting());
+
+        return;
+    }
+
+
 }

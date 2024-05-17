@@ -18,13 +18,17 @@ use Basis\Nats\Stream\StorageBackend;
 use Basis\Nats\Stream\Stream;
 use Basis\Nats\KeyValue\Bucket;
 
+use Ramsey\Uuid\Uuid;
+
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
 use Yiisoft\Queue\Enum\JobStatus;
 use Yiisoft\Queue\Message\IdEnvelope;
 use Yiisoft\Queue\Message\MessageInterface;
+use Yiisoft\Queue\Message\JsonMessageSerializer;
 use Yiisoft\Queue\QueueFactoryInterface;
+
 use Yiisoft\Queue\Nats\Configuration as BrokerConfiguration;
 
 
@@ -34,6 +38,15 @@ class Broker implements BrokerInterface
     private string $subject;
     public string $bucketName;
     private bool $returnDisconnected = false;
+
+    private array $statusString =
+        [
+            JobStatus::WAITING => 'WAITING',
+            JobStatus::RESERVED => 'RESERVED',
+            JobStatus::DONE => 'DONE'
+        ];
+
+    private JsonMessageSerializer $serializer;
 
     public function __construct(
         private string $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
@@ -51,9 +64,11 @@ class Broker implements BrokerInterface
             $this->channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME;
         }
 
-        $this->streamName   = strtoupper($this->channelName) . "JOBS";
-        $this->subject      = $this->streamName . ".*";
-        $this->bucketName   = $this->streamName;
+        $this->streamName = strtoupper($this->channelName) . "JOBS";
+        $this->subject = $this->streamName . ".*";
+        $this->bucketName = $this->streamName;
+
+        $this->serializer = new JsonMessageSerializer();
     }
 
 
@@ -72,7 +87,13 @@ class Broker implements BrokerInterface
             return null;
         }
 
-        return null;
+        $uuid = Uuid::uuid7()->toString();
+        $payload = $this->serializer->serialize($job);
+
+        $this->statuses->put($uuid, $this->statusString[JobStatus::WAITING]);
+        $this->submitted->put(sprintf('%s.%s', $this->streamName, $uuid), $payload);
+
+        return new IdEnvelope($job, $uuid);
     }
 
     public function jobStatus(IdEnvelope $job): ?JobStatus
@@ -81,7 +102,11 @@ class Broker implements BrokerInterface
             return null;
         }
 
-        return null;
+        try {
+            return self::stringToJobStatus($this->statuses->get($job->getId()));
+        } catch (Exception $e) {
+            return null;
+        }
     }
 
     public function pull(float $timeout): ?IdEnvelope
@@ -111,20 +136,20 @@ class Broker implements BrokerInterface
         }
 
         $stream = $this->
-            getClient()->
-            getApi()->
-            getStream($this->streamName);
+        getClient()->
+        getApi()->
+        getStream($this->streamName);
 
         $stream->getConfiguration()->
-            setSubjects([$this->subject])->
-            setRetentionPolicy(RetentionPolicy::WORK_QUEUE)->
-            setStorageBackend(StorageBackend::FILE)->
-            setDiscardPolicy(DiscardPolicy::OLD);
+        setSubjects([$this->subject])->
+        setRetentionPolicy(RetentionPolicy::WORK_QUEUE)->
+        setStorageBackend(StorageBackend::FILE)->
+        setDiscardPolicy(DiscardPolicy::OLD);
 
         $stream->create();
 
         if (!$stream->exists()) {
-            $this->logger->error("can not create jetstream ".$this->streamName." for submitting jobs");
+            $this->logger->error("can not create jetstream " . $this->streamName . " for submitting jobs");
             return null;
         }
 
@@ -157,12 +182,12 @@ class Broker implements BrokerInterface
         }
 
         $bucket = $this->
-            getClient()
+        getClient()
             ->getApi()
             ->getBucket($this->bucketName);
 
         if (!$bucket->getStream()->exists()) {
-            $this->logger->error("can not create kv storage ".$this->bucketName." for statuses");
+            $this->logger->error("can not create kv storage " . $this->bucketName . " for statuses");
             return null;
         }
 
@@ -254,8 +279,23 @@ class Broker implements BrokerInterface
         return true;
     }
 
-    static public function bucketStreamName(string $name): string {
+    static public function bucketStreamName(string $name): string
+    {
         return strtoupper("kv_$name");
+    }
+
+    static public function stringToJobStatus(string $status): ?JobStatus
+    {
+        if (!is_string($status)) {
+            return null;
+        }
+
+        return match ($status) {
+            'WAITING' => JobStatus::waiting(),
+            'RESERVED' => JobStatus::reserved(),
+            'DONE' => JobStatus::done(),
+            default => null,
+        };
     }
 
 }
