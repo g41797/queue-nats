@@ -7,11 +7,13 @@ namespace Yiisoft\Queue\Nats;
 use Basis\Nats\Client;
 use Basis\Nats\Configuration as NatsConfiguration;
 use Basis\Nats\Connection;
+use Basis\Nats\Queue;
 use Basis\Nats\Consumer\AckPolicy;
-use Basis\Nats\Consumer\Configuration;
+use Basis\Nats\Consumer\Configuration as ConsumerConfiguration;
 use Basis\Nats\Consumer\Consumer;
+use Basis\Nats\Consumer\DeliverPolicy;
 use Basis\Nats\Consumer\ReplayPolicy;
-use Basis\Nats\Message\Payload;
+use Basis\Nats\Message\Payload as Nats;
 use Basis\Nats\Stream\DiscardPolicy;
 use Basis\Nats\Stream\RetentionPolicy;
 use Basis\Nats\Stream\StorageBackend;
@@ -25,6 +27,7 @@ use Psr\Log\NullLogger;
 
 use Yiisoft\Queue\Enum\JobStatus;
 use Yiisoft\Queue\Message\IdEnvelope;
+use Yiisoft\Queue\Message\Message As YiiMessage;
 use Yiisoft\Queue\Message\MessageInterface;
 use Yiisoft\Queue\Message\JsonMessageSerializer;
 use Yiisoft\Queue\QueueFactoryInterface;
@@ -36,6 +39,7 @@ class Broker implements BrokerInterface
 {
     public string $streamName;
     private string $subject;
+    private string $prefix;
     public string $bucketName;
     private bool $returnDisconnected = false;
 
@@ -66,6 +70,7 @@ class Broker implements BrokerInterface
 
         $this->streamName = strtoupper($this->channelName) . "JOBS";
         $this->subject = $this->streamName . ".*";
+        $this->prefix = $this->streamName . ".";
         $this->bucketName = $this->streamName;
 
         $this->serializer = new JsonMessageSerializer();
@@ -104,27 +109,55 @@ class Broker implements BrokerInterface
 
         try {
             return self::stringToJobStatus($this->statuses->get($job->getId()));
-        } catch (Exception $e) {
+        } catch (\Exception) {
             return null;
         }
     }
 
     public function pull(float $timeout): ?IdEnvelope
     {
-        if (!$this->isReady()) {
+        if (!$this->isReadyToConsume()) {
             return null;
         }
 
-        return null;
+        try {
+            $msg = $this->queue->next($timeout);
+        }
+        catch (\Exception) {
+            return null;
+        }
+
+        if (null == $msg) {
+            return null;
+        }
+
+        $payload = $msg->payload;
+
+        // We don't use headers
+        // NATS uses headers for errors
+        if ($payload->hasHeaders()) {
+            return null;
+        }
+
+        $mi = $this->serializer->unserialize($payload->body);
+
+        $id = str_replace($this->prefix, "", $msg->payload->subject);
+
+        $this->statuses->put($id, $this->statusString[JobStatus::RESERVED]);
+
+        $msg->ack();
+
+        return new IdEnvelope($mi, $id);
     }
 
-    public function notify(IdEnvelope $job, JobStatus $jobStatus): bool
+    public function done(IdEnvelope $job): bool
     {
         if (!$this->isReady()) {
             return false;
         }
 
-        return false;
+        $this->statuses->put($job->getId(), $this->statusString[JobStatus::DONE]);
+        return true;
     }
 
     private ?Stream $submitted = null;
@@ -136,15 +169,16 @@ class Broker implements BrokerInterface
         }
 
         $stream = $this->
-        getClient()->
-        getApi()->
-        getStream($this->streamName);
+                    getClient()->
+                    getApi()->
+                    getStream($this->streamName);
 
-        $stream->getConfiguration()->
-        setSubjects([$this->subject])->
-        setRetentionPolicy(RetentionPolicy::WORK_QUEUE)->
-        setStorageBackend(StorageBackend::FILE)->
-        setDiscardPolicy(DiscardPolicy::OLD);
+        $stream->
+            getConfiguration()->
+            setSubjects([$this->subject])->
+            setRetentionPolicy(RetentionPolicy::WORK_QUEUE)->
+            setStorageBackend(StorageBackend::FILE)->
+            setDiscardPolicy(DiscardPolicy::OLD);
 
         $stream->create();
 
@@ -182,9 +216,9 @@ class Broker implements BrokerInterface
         }
 
         $bucket = $this->
-        getClient()
-            ->getApi()
-            ->getBucket($this->bucketName);
+            getClient()->
+            getApi()->
+            getBucket($this->bucketName);
 
         if (!$bucket->getStream()->exists()) {
             $this->logger->error("can not create kv storage " . $this->bucketName . " for statuses");
@@ -212,6 +246,53 @@ class Broker implements BrokerInterface
         return;
     }
 
+    public function isReadyToConsume(): bool
+    {
+        if (!$this->isReady()) {
+            return false;
+        }
+
+        return null !== $this->getConsumer();
+    }
+
+    private ?Consumer   $consumer = null;
+    private ?Queue      $queue      = null;
+
+    public function getConsumer(): ?Consumer
+    {
+        if ($this->consumer !== null) {
+            return $this->consumer;
+        }
+
+        $consumer = $this->submitted->getConsumer($this->streamName);
+        $consumer->setBatching(1);
+        $consumer->
+            getConfiguration()->
+                setAckPolicy(AckPolicy::EXPLICIT)->
+                setName($this->streamName)->
+                setSubjectFilter($this->subject)->
+                setDeliverPolicy(DeliverPolicy::ALL)->
+                setMaxAckPending(1);
+
+        $consumer->create();
+
+        if (!$consumer->exists())
+        {
+            $this->logger->error("can not create consumer for stream " . $this->streamName);
+            return null;
+        }
+
+        $this->queue = $consumer->getQueue();
+        $this->consumer = $consumer;
+        return $this->consumer;
+    }
+    public function deleteConsumer()
+    {
+        if ($this->consumer !== null) {
+            $this->consumer->delete();
+            $this->consumer = null;
+        }
+    }
 
     protected ?Client $client = null;
 
@@ -286,10 +367,6 @@ class Broker implements BrokerInterface
 
     static public function stringToJobStatus(string $status): ?JobStatus
     {
-        if (!is_string($status)) {
-            return null;
-        }
-
         return match ($status) {
             'WAITING' => JobStatus::waiting(),
             'RESERVED' => JobStatus::reserved(),

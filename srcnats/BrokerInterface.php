@@ -18,5 +18,5 @@ interface BrokerInterface
 
     public function pull(float $timeout): ?IdEnvelope;
 
-    public function notify(IdEnvelope $job, JobStatus $jobStatus): bool;
+    public function done(IdEnvelope $job): bool;
 }
