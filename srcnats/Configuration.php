@@ -10,6 +10,7 @@ final class Configuration
         public string   $host = 'localhost',
         public int      $port = 4222
     ) {
+        return;
     }
 
     public function update(array $config): self

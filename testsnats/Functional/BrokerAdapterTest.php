@@ -6,6 +6,7 @@ namespace Yiisoft\Queue\Nats\Functional;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
+use Yiisoft\Queue\Nats\Adapter;
 use Yiisoft\Queue\Nats\BrokerFactory;
 use Yiisoft\Queue\Nats\BrokerFactoryInterface;
 
@@ -59,7 +60,39 @@ class BrokerAdapterTest extends FunctionalTestCase
     }
 
     protected function createSubmitter() : AdapterInterface {
-        return $this->getBrokerFactory()->get(logger: $this->getLogger());
+        $factory = $this->getBrokerFactory();
+        $logger = $this->getLogger();
+        $adapter = new Adapter($factory, logger: $logger);
+        return $adapter;
+    }
+
+    public function testSubmitter(): void
+    {
+        $job = new Message("handler", data: 'data',metadata: []);
+
+        $submitter = $this->createSubmitter();
+        $this->assertNotNull($submitter);
+
+        $this->submit($submitter,$job);
+
+        return;
+    }
+
+    protected function submit(AdapterInterface $adapter, MessageInterface $job, int $count = 1000): void
+    {
+        for ($i= 0; $i < $count; $i++) {
+
+            $submitted = $adapter->push($job);
+
+            $this->assertNotNull($adapter);
+            $this->assertTrue($submitted instanceof IdEnvelope);
+            $this->assertArrayHasKey(IdEnvelope::MESSAGE_ID_KEY, $submitted->getMetadata());
+            $id = $submitted->getMetadata()[IdEnvelope::MESSAGE_ID_KEY];
+            $this->assertIsString($id);
+
+            $status = $adapter->status($id);
+            $this->assertTrue($status->isWaiting());
+        }
     }
 
 }
