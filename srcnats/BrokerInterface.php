@@ -14,9 +14,9 @@ interface BrokerInterface
 
     public function push(MessageInterface $job): ?IdEnvelope;
 
-    public function jobStatus(IdEnvelope $job): ?JobStatus;
+    public function jobStatus(string $id): ?JobStatus;
 
     public function pull(float $timeout): ?IdEnvelope;
 
-    public function done(IdEnvelope $job): bool;
+    public function done(string $id): bool;
 }

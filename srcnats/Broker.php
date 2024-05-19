@@ -53,9 +53,9 @@ class Broker implements BrokerInterface
     private JsonMessageSerializer $serializer;
 
     public function __construct(
-        private string $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
-        private ?BrokerConfiguration $configuration = null,
-        private ?LoggerInterface $logger = null
+        private string                  $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
+        private ?BrokerConfiguration    $configuration = null,
+        private ?LoggerInterface        $logger = null
     ) {
         if (null == $configuration) {
             $this->configuration = BrokerConfiguration::default();
@@ -79,7 +79,7 @@ class Broker implements BrokerInterface
 
     public function withChannel(string $channel): BrokerInterface
     {
-        if ($channel === $this->channelName) {
+        if ($channel == $this->channelName) {
             return $this;
         }
 
@@ -101,14 +101,19 @@ class Broker implements BrokerInterface
         return new IdEnvelope($job, $uuid);
     }
 
-    public function jobStatus(IdEnvelope $job): ?JobStatus
+    public function jobStatus(string $id): ?JobStatus
     {
+        if (empty($id))
+        {
+            return null;
+        }
+
         if (!$this->isReady()) {
             return null;
         }
 
         try {
-            return self::stringToJobStatus($this->statuses->get($job->getId()));
+            return self::stringToJobStatus($this->statuses->get($id));
         } catch (\Exception) {
             return null;
         }
@@ -150,13 +155,18 @@ class Broker implements BrokerInterface
         return new IdEnvelope($mi, $id);
     }
 
-    public function done(IdEnvelope $job): bool
+    public function done(string $id): bool
     {
+        if (empty($id))
+        {
+            return false;
+        }
+
         if (!$this->isReady()) {
             return false;
         }
 
-        $this->statuses->put($job->getId(), $this->statusString[JobStatus::DONE]);
+        $this->statuses->put($id, $this->statusString[JobStatus::DONE]);
         return true;
     }
 

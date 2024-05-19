@@ -113,7 +113,7 @@ class BrokerTest extends FunctionalTestCase
         $extjob = $submitter->push($job);
         $this->assertNotNull($extjob);
 
-        $jobStatus = $submitter->jobStatus($extjob);
+        $jobStatus = $submitter->jobStatus($extjob->getId());
         $this->assertNotNull($jobStatus);
         $this->assertTrue($jobStatus->isWaiting());
 
@@ -130,15 +130,15 @@ class BrokerTest extends FunctionalTestCase
         $extjob = $submitter->push($job);
         $this->assertNotNull($extjob);
 
-        $jobStatus = $submitter->jobStatus($extjob);
+        $jobStatus = $submitter->jobStatus($extjob->getId());
         $this->assertNotNull($jobStatus);
         $this->assertTrue($jobStatus->isWaiting());
 
         $worker = new Broker();
         $this->assertTrue($worker->isReady());
-        $this->assertTrue($worker->done($extjob));
+        $this->assertTrue($worker->done($extjob->getId()));
 
-        $jobStatus = $submitter->jobStatus($extjob);
+        $jobStatus = $submitter->jobStatus($extjob->getId());
         $this->assertNotNull($jobStatus);
         $this->assertTrue($jobStatus->isDone());
 
@@ -174,7 +174,7 @@ class BrokerTest extends FunctionalTestCase
         $this->assertNotNull($extjob);
 
         // Processing is not started, job status "WAITING"
-        $jobStatus = $submitter->jobStatus($extjob);
+        $jobStatus = $submitter->jobStatus($extjob->getId());
         $this->assertNotNull($jobStatus);
         $this->assertTrue($jobStatus->isWaiting());
 
@@ -186,15 +186,15 @@ class BrokerTest extends FunctionalTestCase
         $this->assertEquals($recvjob->getData(), $extjob->getData());
 
         // In process, job status "RESERVED"
-        $jobStatus = $submitter->jobStatus($extjob);
+        $jobStatus = $submitter->jobStatus($extjob->getId());
         $this->assertNotNull($jobStatus);
         $this->assertTrue($jobStatus->isReserved());
 
         // Simulate job finished by worker
-        $this->assertTrue($worker->done($extjob));
+        $this->assertTrue($worker->done($extjob->getId()));
 
         // Job status "DONE"
-        $jobStatus = $submitter->jobStatus($extjob);
+        $jobStatus = $submitter->jobStatus($extjob->getId());
         $this->assertNotNull($jobStatus);
         $this->assertTrue($jobStatus->isDone());
 
