@@ -148,3 +148,8 @@ JetStream Global Lock
         if you use acks correctly and request more time to process a message if you are
         not done with it in time you can even handle long running jobs this way
 
+Run GitActions locally
+    https://nektosact.com/
+
+    Repo for testing
+        https://github.com/cplee/github-actions-demo
