@@ -9,28 +9,30 @@ use Yiisoft\Queue\Message\MessageInterface;
 
 class CheckMessageHandler
 {
-    private MessageInterface $expected;
-    public function __construct(MessageInterface $msg)
+    private ?MessageInterface $expected = null;
+    public function __construct(?MessageInterface $msg = null)
     {
         $this->update($msg);
     }
 
-    public function update(MessageInterface $msg): void
+    public function update(?MessageInterface $msg): self
     {
-        $this->expected = new Message   (
-            $msg->getHandlerName(),
-            $msg->getMessage(),
-            $msg->getMetadata()
-        );
+        if ($msg !== null) {
+            $this->expected = new Message   (
+                $msg->getHandlerName(),
+                $msg->getMessage(),
+                $msg->getMetadata()
+            );
+        }
+        return $this;
     }
 
     private int $jobs = 0;
 
-    public function reset(): int
+    public function reset(): self
     {
-        $result = $this->jobs;
         $this->jobs = 0;
-        return $result;
+        return $this;
     }
 
     public function handle(MessageInterface $message): bool

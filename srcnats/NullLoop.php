@@ -10,12 +10,20 @@ class NullLoop implements LoopInterface
 {
     private bool $forever = true;
 
+    private int $initisl = 0;
     private int $rest = 0;
 
     public function __construct(int $loops = -1)
     {
-        if ($loops >= 0) {
-            $this->forever = false;
+        $this->update($loops);
+    }
+
+    public function update(int $loops = -1): void
+    {
+        $this->forever = ($loops < 0);
+
+        if (!$this->forever) {
+            $this->initisl = $loops;
             $this->rest = $loops;
         }
     }
@@ -30,6 +38,7 @@ class NullLoop implements LoopInterface
         }
 
         if ($this->rest === 0) {
+            $this->update($this->initisl);
             return false;
         }
 
