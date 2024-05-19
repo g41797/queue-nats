@@ -17,11 +17,8 @@
     </php>
 
     <testsuites>
-        <testsuite name="Integration">
-            <directory>./testsnats/Integration</directory>
-        </testsuite>
-        <testsuite name="Unit">
-            <directory>./testsnats/Unit</directory>
+        <testsuite name="Functional">
+            <directory>testsnats/Functional</directory>
         </testsuite>
     </testsuites>
 
