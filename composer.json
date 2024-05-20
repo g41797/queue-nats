@@ -1,5 +1,5 @@
 {
-    "name": "yiisoft/queue-nats",
+    "name": "g41797/queue-nats",
     "type": "library",
     "description": "Yii Queue NATS adapter",
     "keywords": [
@@ -7,7 +7,6 @@
         "queue",
         "nats"
     ],
-    "homepage": "https://www.yiiframework.com/",
     "license": "BSD-3-Clause",
     "minimum-stability": "dev",
     "prefer-stable": true,
