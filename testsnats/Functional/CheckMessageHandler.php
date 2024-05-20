@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Queue\Nats\Functional;
 
+use Yiisoft\Queue\Message\IdEnvelope;
 use Yiisoft\Queue\Message\Message;
 use Yiisoft\Queue\Message\MessageInterface;
 
@@ -18,11 +19,12 @@ class CheckMessageHandler
     public function update(?MessageInterface $msg): self
     {
         if ($msg !== null) {
-            $this->expected = new Message   (
+            $expected = new Message(
                 $msg->getHandlerName(),
-                $msg->getMessage(),
+                $msg->getData(),
                 $msg->getMetadata()
             );
+            $this->expected = $expected;
         }
         return $this;
     }
@@ -37,10 +39,21 @@ class CheckMessageHandler
 
     public function handle(MessageInterface $message): bool
     {
-        $this->jobs =+ 1;
+        $this->jobs += 1;
 
-        return $message == $this->expected;
+        if ($message instanceof IdEnvelope) {
+            $message = $message->getMessage();
+        }
+
+        $eh = ($message->getHandlerName() == $this->expected->getHandlerName());
+        $ed = ($message->getData() == $this->expected->getData());
+        $em = ($message->getMetadata() == $this->expected->getMetadata());
+
+        return ($eh && $ed && $em);
     }
 
-
+    public function processed(): int
+    {
+        return $this->jobs;
+    }
 }

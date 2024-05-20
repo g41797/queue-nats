@@ -22,6 +22,10 @@ abstract class FunctionalTestCase extends TestCase
         return $this->client ?: $this->client = $this->createClient();
     }
 
+    public function setUp(): void
+    {
+        $this->tearDown();
+    }
     public function tearDown(): void
     {
         $api = $this->createClient()->getApi();

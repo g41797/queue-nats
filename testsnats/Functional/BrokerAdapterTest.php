@@ -18,6 +18,7 @@ use Yiisoft\Queue\Adapter\AdapterInterface;
 use Yiisoft\Queue\Cli\LoopInterface;
 use Yiisoft\Queue\Enum\JobStatus;
 
+use Yiisoft\Queue\Nats\NullLoop;
 use Yiisoft\Queue\QueueFactoryInterface;
 
 
@@ -59,40 +60,94 @@ class BrokerAdapterTest extends FunctionalTestCase
         return $this->handler;
     }
 
+    private ?NullLoop $loop = null;
+    protected function getLoop(): NullLoop
+    {
+        if ($this->loop == null) {
+            $this->loop = new NullLoop();
+        }
+
+        return $this->loop;
+    }
+
     protected function createSubmitter() : AdapterInterface {
         $factory = $this->getBrokerFactory();
         $logger = $this->getLogger();
-        $adapter = new Adapter($factory, logger: $logger);
-        return $adapter;
+        return new Adapter($factory, logger: $logger);
     }
 
-    public function testSubmitter(): void
+    protected function createWorker() : AdapterInterface {
+        $factory = $this->getBrokerFactory();
+        $logger = $this->getLogger();
+        $loop = $this->getLoop();
+        return new Adapter($factory, logger: $logger, loop: $loop, timeout: 3.0);
+    }
+
+    static function getJob(): MessageInterface {
+        return new Message("handler", data: 'data',metadata: []);
+    }
+    public function testSubmitterWorker(): void
     {
-        $job = new Message("handler", data: 'data',metadata: []);
+        $job = self::getJob();
 
         $submitter = $this->createSubmitter();
         $this->assertNotNull($submitter);
 
-        $this->submit($submitter,$job);
+        $count = 10;
+
+        $submitted = $this->submit($submitter, $job, $count);
+
+        $this->assertEquals($count, count($submitted));
+
+        $worker = $this->createWorker();
+        $this->assertNotNull($worker);
+
+        $this->process($worker, $job, $submitted);
 
         return;
     }
 
-    protected function submit(AdapterInterface $adapter, MessageInterface $job, int $count = 1000): void
+    protected function submit(AdapterInterface $submitter, MessageInterface $job, int $count = 1000): array
     {
+        $ids = [];
+
         for ($i= 0; $i < $count; $i++) {
 
-            $submitted = $adapter->push($job);
+            $submitted = $submitter->push($job);
 
-            $this->assertNotNull($adapter);
+            $this->assertNotNull($submitter);
             $this->assertTrue($submitted instanceof IdEnvelope);
             $this->assertArrayHasKey(IdEnvelope::MESSAGE_ID_KEY, $submitted->getMetadata());
             $id = $submitted->getMetadata()[IdEnvelope::MESSAGE_ID_KEY];
             $this->assertIsString($id);
 
-            $status = $adapter->status($id);
+            $ids[] = $id;
+        }
+
+        foreach ($ids as $id) {
+            $status = $submitter->status($id);
             $this->assertTrue($status->isWaiting());
         }
+
+        return $ids;
     }
+
+    protected function process(AdapterInterface $worker, MessageInterface $expectedJob, array $ids): void
+    {
+        $this->getLoop()->update(count($ids));
+        $this->getHandler()->update($expectedJob);
+
+        $worker->subscribe($this->getCallback());
+
+        $this->assertEquals($this->getHandler()->processed(), count($ids));
+
+        foreach ($ids as $id) {
+            $status = $worker->status($id);
+            $this->assertTrue($status->isDone());
+        }
+
+        return;
+    }
+
 
 }

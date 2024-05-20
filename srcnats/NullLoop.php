@@ -10,7 +10,7 @@ class NullLoop implements LoopInterface
 {
     private bool $forever = true;
 
-    private int $initisl = 0;
+    private int $initial = 0;
     private int $rest = 0;
 
     public function __construct(int $loops = -1)
@@ -23,7 +23,7 @@ class NullLoop implements LoopInterface
         $this->forever = ($loops < 0);
 
         if (!$this->forever) {
-            $this->initisl = $loops;
+            $this->initial = $loops;
             $this->rest = $loops;
         }
     }
@@ -38,7 +38,7 @@ class NullLoop implements LoopInterface
         }
 
         if ($this->rest === 0) {
-            $this->update($this->initisl);
+            $this->update($this->initial);
             return false;
         }
 

@@ -308,7 +308,8 @@ class Broker implements BrokerInterface
 
     private function getClient(): Client
     {
-        return $this->client ?: $this->client = new Client($this->natsConfiguration());
+        return $this->client ?:
+                $this->client = new Client($this->natsConfiguration()->setDelay(0.1));
     }
 
     private function natsConfiguration(): NatsConfiguration
