@@ -15,7 +15,7 @@
 The package could be installed with composer:
 
 ```shell
-composer require g41977/queue-nats
+composer require g41797/queue-nats
 ```
 
 ## General usage
