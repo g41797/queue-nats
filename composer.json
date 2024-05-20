@@ -1,32 +1,14 @@
 {
-    "name": "yiisoft/queue-redis",
+    "name": "yiisoft/queue-nats",
     "type": "library",
-    "description": "Yii Queue AMQP adapter based on redis-extension",
+    "description": "Yii Queue NATS adapter",
     "keywords": [
-        "yii",
+        "yii3",
         "queue",
-        "redis"
+        "nats"
     ],
     "homepage": "https://www.yiiframework.com/",
     "license": "BSD-3-Clause",
-    "support": {
-        "issues": "https://github.com/yiisoft/queue-redis/issues?state=open",
-        "forum": "https://www.yiiframework.com/forum/",
-        "wiki": "https://www.yiiframework.com/wiki/",
-        "irc": "ircs://irc.libera.chat:6697/yii",
-        "chat": "https://t.me/yii3en",
-        "source": "https://github.com/yiisoft/queue-redis"
-    },
-    "funding": [
-        {
-            "type": "opencollective",
-            "url": "https://opencollective.com/yiisoft"
-        },
-        {
-            "type": "github",
-            "url": "https://github.com/sponsors/yiisoft"
-        }
-    ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
