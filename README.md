@@ -1,10 +1,4 @@
-<p align="center">
-    <a href="https://github.com/yiisoft" target="_blank">
-        <img src="https://yiisoft.github.io/docs/images/yii_logo.svg" height="100px">
-    </a>
-    <h1 align="center">Yii3 Queue Nats Adapter</h1>
-    <br>
-</p>
+                                            Yii3 Queue Nats Adapter
 
 ## Requirements
 
