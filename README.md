@@ -1,4 +1,4 @@
-                                Yii3 Queue Nats Adapter
+                                Yii3 Queue Nats Broker Adapter
 
 ## Requirements
 
