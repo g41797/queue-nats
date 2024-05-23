@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace G41797\Queue\Nats\Functional;
 
+use Ramsey\Uuid\Uuid;
+use Yiisoft\Queue\Enum\JobStatus;
 use Yiisoft\Queue\Message\Message;
 use G41797\Queue\Nats\Broker;
 
@@ -92,7 +94,7 @@ class BrokerTest extends FunctionalTestCase
         return;
     }
 
-    public function testTwoBrokersReady()
+    public function testTwoBrokersReady(): void
     {
         $broker1 = new Broker();
         $this->assertTrue($broker1->isReady());
@@ -201,5 +203,64 @@ class BrokerTest extends FunctionalTestCase
         return;
     }
 
+    public function testPutToSubmitted(): void
+    {
+        $broker = new Broker();
+        $this->assertTrue($broker->isConnected());
+        $this->assertNotNull($broker->getSubmitted());
+        $this->assertTrue(in_array($broker->streamName, $this->getStreamNames()));
+
+        $count = 1000;
+        $puttime = self::getTimeOfPutToSubmitted($broker, $count);
+
+        return;
+    }
+
+    public function testPutToStatuses(): void
+    {
+        $broker = new Broker();
+        $this->assertTrue($broker->isConnected());
+        $this->assertNotNull($broker->getSubmitted());
+        $this->assertTrue(in_array($broker->streamName, $this->getStreamNames()));
+        $this->assertNotNull($broker->getStatuses());
+
+        $count = 1000;
+        $puttime = self::getTimeOfPutToStatuses($broker, $count);
+
+        return;
+    }
+
+
+    static public function getTimeOfPutToSubmitted(Broker $broker, int $count = 1): float
+    {
+        $payload = $broker->serializer->serialize(BrokerAdapterTest::getJob());
+
+        $start = microtime(true);
+
+        for ($i = 0; $i < $count; $i++)
+        {
+            // $uuid = Uuid::uuid7()->toString();
+            $broker->submitted->put(sprintf('%s.%s', $broker->streamName, $i), $payload);
+        }
+
+        $dt = number_format((microtime(true) - $start) * 1000, 2);;
+
+        return  $dt/$count;
+    }
+
+    static public function getTimeOfPutToStatuses(Broker $broker, int $count = 1): float
+    {
+        $start = microtime(true);
+
+        for ($i = 0; $i < $count; $i++)
+        {
+            //$uuid = Uuid::uuid7()->toString();
+            $broker->statuses->put(strval($i), $broker->statusString[JobStatus::WAITING]);
+        }
+
+        $dt = number_format((microtime(true) - $start) * 1000, 2);;
+
+        return  $dt/$count;
+    }
 
 }

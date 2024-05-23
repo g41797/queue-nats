@@ -43,14 +43,14 @@ class Broker implements BrokerInterface
     public string $bucketName;
     private bool $returnDisconnected = false;
 
-    private array $statusString =
+    public array $statusString =
         [
             JobStatus::WAITING => 'WAITING',
             JobStatus::RESERVED => 'RESERVED',
             JobStatus::DONE => 'DONE'
         ];
 
-    private JsonMessageSerializer $serializer;
+    public JsonMessageSerializer $serializer;
 
     public function __construct(
         private string                  $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
@@ -170,7 +170,7 @@ class Broker implements BrokerInterface
         return true;
     }
 
-    private ?Stream $submitted = null;
+    public ?Stream $submitted = null;
 
     public function getSubmitted(): ?Stream
     {
@@ -217,7 +217,7 @@ class Broker implements BrokerInterface
         return;
     }
 
-    private ?Bucket $statuses = null;
+    public ?Bucket $statuses = null;
 
     public function getStatuses(): ?Bucket
     {
@@ -265,8 +265,8 @@ class Broker implements BrokerInterface
         return null !== $this->getConsumer();
     }
 
-    private ?Consumer   $consumer = null;
-    private ?Queue      $queue      = null;
+    public ?Consumer   $consumer = null;
+    public ?Queue      $queue      = null;
 
     public function getConsumer(): ?Consumer
     {

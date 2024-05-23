@@ -3,23 +3,17 @@ declare(strict_types=1);
 
 namespace G41797\Queue\Nats\Functional;
 
-use Psr\Log\LoggerInterface;
-use Psr\Log\NullLogger;
-
 use G41797\Queue\Nats\Adapter;
 use G41797\Queue\Nats\BrokerFactory;
 use G41797\Queue\Nats\BrokerFactoryInterface;
-
+use G41797\Queue\Nats\CheckMessageHandler;
+use G41797\Queue\Nats\NullLoop;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
+use Yiisoft\Queue\Adapter\AdapterInterface;
+use Yiisoft\Queue\Message\IdEnvelope;
 use Yiisoft\Queue\Message\Message;
 use Yiisoft\Queue\Message\MessageInterface;
-use Yiisoft\Queue\Message\IdEnvelope;
-
-use Yiisoft\Queue\Adapter\AdapterInterface;
-use Yiisoft\Queue\Cli\LoopInterface;
-use Yiisoft\Queue\Enum\JobStatus;
-
-use G41797\Queue\Nats\NullLoop;
-use Yiisoft\Queue\QueueFactoryInterface;
 
 
 class BrokerAdapterTest extends FunctionalTestCase
