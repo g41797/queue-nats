@@ -24,9 +24,17 @@ abstract class FunctionalTestCase extends TestCase
 
     public function setUp(): void
     {
-        $this->tearDown();
+        $this->clean();
+
+        parent::setUp();
     }
     public function tearDown(): void
+    {
+        $this->clean();
+
+        parent::tearDown();
+    }
+    public function clean(): void
     {
         $api = $this->createClient()->getApi();
 

@@ -15,5 +15,4 @@ use G41797\Queue\Nats\BrokerFactory;
 
 return [
     Yiisoft\Queue\Adapter\AdapterInterface::class => G41797\Queue\Nats\Adapter::class,
-    G41797\Queue\Nats\BrokerFactoryInterface::class => G41797\Queue\Nats\BrokerFactory::class,
 ];

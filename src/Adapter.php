@@ -15,14 +15,17 @@ use Yiisoft\Queue\QueueFactoryInterface;
 
 class Adapter implements AdapterInterface
 {
+    private BrokerFactoryInterface $brokerFactory;
+
     public function __construct(
-        private BrokerFactoryInterface $brokerFactory,
         private string              $channelName = QueueFactoryInterface::DEFAULT_CHANNEL_NAME,
         private array               $brokerConfiguration = [],
         private ?LoggerInterface    $logger = null,
         private ?LoopInterface      $loop = null,
         private float               $timeout = 1.0,
     ) {
+        $this->brokerFactory = new BrokerFactory();
+
         if (null == $loop ) {
             $loop = new NullLoop();
         }

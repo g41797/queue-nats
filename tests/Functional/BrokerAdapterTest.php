@@ -67,14 +67,14 @@ class BrokerAdapterTest extends FunctionalTestCase
     protected function createSubmitter() : AdapterInterface {
         $factory = $this->getBrokerFactory();
         $logger = $this->getLogger();
-        return new Adapter($factory, logger: $logger);
+        return new Adapter(logger: $logger);
     }
 
     protected function createWorker() : AdapterInterface {
         $factory = $this->getBrokerFactory();
         $logger = $this->getLogger();
         $loop = $this->getLoop();
-        return new Adapter($factory, logger: $logger, loop: $loop, timeout: 3.0);
+        return new Adapter(logger: $logger, loop: $loop, timeout: 3.0);
     }
 
     static function getJob(): MessageInterface {
