@@ -11,7 +11,7 @@ services:
     depends_on:
       - nats
   nats:
-      image: nats:alpine
+      image: nats:latest
       restart: unless-stopped
       ports:
         - "4222:4222"
