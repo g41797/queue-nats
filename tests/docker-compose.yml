@@ -4,10 +4,10 @@ services:
     working_dir: /app
     build:
       context: ..
-      dockerfile: ./testsnats/docker/php/cli/Dockerfile
+      dockerfile: ./tests/docker/php/cli/Dockerfile
     restart: on-failure
     volumes:
-      - ./runtime:/app/testsnats/runtime
+      - ./runtime:/app/tests/runtime
     depends_on:
       - nats
   nats:

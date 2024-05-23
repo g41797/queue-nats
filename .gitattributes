@@ -32,7 +32,7 @@
 /phpunit.xml.dist       export-ignore
 /psalm.xml              export-ignore
 /tests                  export-ignore
-/testsnats              export-ignore
+/tests              export-ignore
 /docs                   export-ignore
 
 # Avoid merge conflicts in CHANGELOG

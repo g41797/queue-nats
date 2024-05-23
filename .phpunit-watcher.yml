@@ -1,7 +1,7 @@
 watch:
   directories:
-    - srcnats
-    - testsnats
+    - src
+    - tests
   fileMask: '*.php'
 notifications:
   passingTests: false

@@ -3,9 +3,9 @@
 declare(strict_types=1);
 
 use Yiisoft\Queue\Adapter\AdapterInterface;
-use Yiisoft\Queue\Nats\Adapter;
-use Yiisoft\Queue\Nats\BrokerFactoryInterface;
-use Yiisoft\Queue\Nats\BrokerFactory;
+use G41797\Queue\Nats\Adapter;
+use G41797\Queue\Nats\BrokerFactoryInterface;
+use G41797\Queue\Nats\BrokerFactory;
 
 // TODO: how to proceed
 // https://github.com/yiisoft/queue/blob/master/config/di.php
@@ -14,6 +14,6 @@ use Yiisoft\Queue\Nats\BrokerFactory;
 // https://github.com/yiisoft/factory
 
 return [
-    Yiisoft\Queue\Adapter\AdapterInterface::class => Yiisoft\Queue\Nats\Adapter::class,
-    Yiisoft\Queue\Nats\BrokerFactoryInterface::class => Yiisoft\Queue\Nats\BrokerFactory::class,
+    Yiisoft\Queue\Adapter\AdapterInterface::class => G41797\Queue\Nats\Adapter::class,
+    G41797\Queue\Nats\BrokerFactoryInterface::class => G41797\Queue\Nats\BrokerFactory::class,
 ];

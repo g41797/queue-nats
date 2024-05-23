@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Queue\Nats;
+namespace G41797\Queue\Nats;
 
 use Psr\Log\LoggerInterface;
 use Yiisoft\Queue\QueueFactoryInterface;

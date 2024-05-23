@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Queue\Nats;
+namespace G41797\Queue\Nats;
 
 use Basis\Nats\Client;
 use Basis\Nats\Configuration as NatsConfiguration;
@@ -32,7 +32,7 @@ use Yiisoft\Queue\Message\MessageInterface;
 use Yiisoft\Queue\Message\JsonMessageSerializer;
 use Yiisoft\Queue\QueueFactoryInterface;
 
-use Yiisoft\Queue\Nats\Configuration as BrokerConfiguration;
+use G41797\Queue\Nats\Configuration as BrokerConfiguration;
 
 
 class Broker implements BrokerInterface

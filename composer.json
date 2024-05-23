@@ -29,12 +29,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Yiisoft\\Queue\\Nats\\": "srcnats/"
+            "G41797\\Queue\\Nats\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Yiisoft\\Queue\\Nats\\": "testsnats/"
+            "G41797\\Queue\\Nats\\": "tests/"
         }
     },
     "extra": {

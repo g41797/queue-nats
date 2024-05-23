@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Queue\Nats\Functional;
+namespace G41797\Queue\Nats\Functional;
 
 use Basis\Nats\Client;
 use PHPUnit\Framework\TestCase;

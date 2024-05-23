@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Queue\Nats\Exception;
+namespace G41797\Queue\Nats\Exception;
 
 use Yiisoft\FriendlyException\FriendlyExceptionInterface;
 

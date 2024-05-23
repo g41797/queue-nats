@@ -18,13 +18,13 @@
 
     <testsuites>
         <testsuite name="Functional">
-            <directory>testsnats/Functional</directory>
+            <directory>tests/Functional</directory>
         </testsuite>
     </testsuites>
 
     <source>
         <include>
-            <directory suffix=".php">./srcnats</directory>
+            <directory suffix=".php">./src</directory>
         </include>
     </source>
 </phpunit>

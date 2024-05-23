@@ -1,14 +1,14 @@
 <?php
 declare(strict_types=1);
 
-namespace Yiisoft\Queue\Nats\Functional;
+namespace G41797\Queue\Nats\Functional;
 
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 
-use Yiisoft\Queue\Nats\Adapter;
-use Yiisoft\Queue\Nats\BrokerFactory;
-use Yiisoft\Queue\Nats\BrokerFactoryInterface;
+use G41797\Queue\Nats\Adapter;
+use G41797\Queue\Nats\BrokerFactory;
+use G41797\Queue\Nats\BrokerFactoryInterface;
 
 use Yiisoft\Queue\Message\Message;
 use Yiisoft\Queue\Message\MessageInterface;
@@ -18,7 +18,7 @@ use Yiisoft\Queue\Adapter\AdapterInterface;
 use Yiisoft\Queue\Cli\LoopInterface;
 use Yiisoft\Queue\Enum\JobStatus;
 
-use Yiisoft\Queue\Nats\NullLoop;
+use G41797\Queue\Nats\NullLoop;
 use Yiisoft\Queue\QueueFactoryInterface;
 
 

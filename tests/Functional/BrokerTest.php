@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Yiisoft\Queue\Nats\Functional;
+namespace G41797\Queue\Nats\Functional;
 
 use Yiisoft\Queue\Message\Message;
-use Yiisoft\Queue\Nats\Broker;
+use G41797\Queue\Nats\Broker;
 
 class BrokerTest extends FunctionalTestCase
 {
