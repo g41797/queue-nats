@@ -1,4 +1,15 @@
 on:
+  workflow_dispatch:
+    branches: ['master']
+    paths-ignore:
+      - 'docs/**'
+      - 'README.md'
+      - 'CHANGELOG.md'
+      - '.gitignore'
+      - '.gitattributes'
+      - 'infection.json.dist'
+      - 'psalm.xml'
+
   pull_request:
     paths-ignore:
       - 'docs/**'
