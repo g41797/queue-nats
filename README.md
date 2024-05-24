@@ -1,4 +1,4 @@
-                                Yii3 Queue NATS Adapter
+# Yii3 Queue NATS Adapter
 
 
 [![tests](https://github.com/g41797/queue-nats/actions/workflows/tests.yml/badge.svg)](https://github.com/g41797/queue-nats/actions/workflows/tests.yml)
