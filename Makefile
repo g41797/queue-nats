@@ -20,7 +20,7 @@ test-integration:	## Run integration tests.
 	docker-compose -f tests/docker-compose.yml run php-cli vendor/bin/phpunit --testsuite Integration
 static-analyze:		## Run code static analyze.
 	make build
-	docker-compose -f tests/docker-compose.yml run php-cli vendor/bin/psalm --config=psalm.xml --shepherd --stats --php-version=8.1
+	docker-compose -f tests/docker-compose.yml run php-cli vendor/bin/psalm --config=psalm.xml --shepherd --stats --php-version=8.2
 rector:			## Run rector.
 	make build
 	docker-compose -f tests/docker-compose.yml run php-cli vendor/bin/rector process --config=rector.php --dry-run
