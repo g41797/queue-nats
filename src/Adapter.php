@@ -89,11 +89,11 @@ class Adapter implements AdapterInterface
         }
 
         return new self(
-                            $this->brokerFactory,
                             $this->channelName,
                             $this->brokerConfiguration,
                             $this->logger,
-                            $this->loop
+                            $this->loop,
+                            $this->timeout
                         );
     }
 

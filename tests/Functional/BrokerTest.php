@@ -233,7 +233,7 @@ class BrokerTest extends FunctionalTestCase
 
     static public function getTimeOfPutToSubmitted(Broker $broker, int $count = 1): float
     {
-        $payload = $broker->serializer->serialize(BrokerAdapterTest::getJob());
+        $payload = $broker->serializer->serialize(AdapterTest::getJob());
 
         $start = microtime(true);
 

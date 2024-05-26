@@ -16,7 +16,7 @@ use Yiisoft\Queue\Message\Message;
 use Yiisoft\Queue\Message\MessageInterface;
 
 
-class BrokerAdapterTest extends FunctionalTestCase
+class AdapterTest extends FunctionalTestCase
 {
 
     private ?BrokerFactoryInterface $brokerFactory = null;
